@@ -1,32 +1,31 @@
-# Use official Node.js 20 alpine image
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies required to build native modules (Prisma sometimes needs this)
+# Install build dependencies for Prisma
 RUN apk add --no-cache bash python3 make g++ 
 
-# Copy package.json and yarn.lock first for caching
+# Copy package.json and yarn.lock first (for caching)
 COPY package.json yarn.lock ./
 
-# Install dependencies
+# Install dependencies (do NOT generate Prisma yet)
 RUN yarn install --frozen-lockfile
 
-# Copy the rest of the application
+# Copy the rest of your application (including prisma folder)
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client now (after prisma/schema.prisma is present)
 RUN npx prisma generate
 
 # Build TypeScript
 RUN yarn build
 
-# Expose the port your app will run on
+# Expose port
 EXPOSE 5050
 
-# Ensure entrypoint.sh is executable
+# Make entrypoint executable
 RUN chmod +x ./entrypoint.sh
 
-# Run the entrypoint
+# Run the server
 ENTRYPOINT ["sh", "./entrypoint.sh"]
