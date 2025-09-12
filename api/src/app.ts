@@ -8,7 +8,12 @@ import config from './config';
 
 const app: Application = express();
 
-app.use(cors());
+const allowedOrigins = [config.clientUrl, 'https://carepoint-8s10.onrender.com'].filter((origin): origin is string => Boolean(origin));
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 app.use(CookieParser());
 
 app.use(express.json());
